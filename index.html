@@ -11,19 +11,29 @@
 <button id='stop' onclick='stop();' disabled='true'>stop</button>
 <script src='clocksync.js'></script>
 <script>
+  var display = document.getElementById('display');
 
-  var iOS = ( navigator.userAgent.match(/(iPad|iPhone|iPod)/g) ? true : false );
+  function log() {
+    var args = Array.prototype.slice.call(arguments);
+    display.textContent = args.join(' ');
+    console.log.apply(console, arguments);
+  }
+
+  function getURLParameter(name) {
+    return decodeURIComponent((new RegExp('[?|&]' + name + '=' + '([^&;]+?)(&|#|;|$)').exec(location.search)||[,""])[1].replace(/\+/g, '%20'))||null
+  }
+</script>
+<script>
 
   var buffer, context, source;
 
-  var display = document.getElementById('display');
   var seconds = document.getElementById('seconds');
   var playb = document.getElementById('play');
   var stopb = document.getElementById('stop');
 
   window.AudioContext = window.AudioContext||window.webkitAudioContext;
   context = new AudioContext();
-  
+
   // play noise to trigger the context.currentTime
   var noise = context.createOscillator();
   noise.type = 0; // sine
@@ -31,6 +41,7 @@
   noise.connect(context.destination);
   noise.noteOn(0);
   noise.noteOff(0.1);
+
 
   function play() {
     if (!buffer || !!source) {
@@ -45,14 +56,13 @@
     source.connect(context.destination);
     var duration = source.buffer.duration;
     window.source = source;
-    display.textContent = 'Syncing Clock';
-    console.log('syncing');
-    display.textContent = 'Playing';
+    log('Playing');
     var now = clocksync.time();
     var seconds_today = now % (86400000) / 1000;
-    var offset = (seconds_today + 2) % duration;
-    console.log('start at', context.currentTime, offset);
-    source.start(context.currentTime + 2, offset);
+    var padding = 2;
+    var offset = (seconds_today + padding) % duration;
+    log('Start at', context.currentTime + padding, 'offset', offset);
+    source.start(context.currentTime + padding, offset);
   }
 
   function stop() {
@@ -61,18 +71,18 @@
     }
     stopb.disabled = true;
     playb.disabled = false;
-    display.textContent = 'Stopped';
+    log('Stopped');
     source.stop(0); 
     source = undefined;
   }
 
-  console.log('Syncing clock');
+  log('Syncing clock');
   clocksync.sync(function() {
-    console.log('Clock synced');
-    display.textContent = 'Loading music';
-    console.log('loading buffer');
+    log('Clock synced');
+    log('Loading music');
     var request = new XMLHttpRequest();
-    request.open('GET', 'http://commondatastorage.googleapis.com/arcade-fire%2Fonye_akpa.mp3', true);
+    var music = getURLParameter('mp3') || 'http://commondatastorage.googleapis.com/arcade-fire%2Fonye_akpa.mp3';
+    request.open('GET', music, true);
     request.responseType = 'arraybuffer';
     request.onload = function() {
       context.decodeAudioData(request.response, function(b) {

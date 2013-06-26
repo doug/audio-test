@@ -184,8 +184,13 @@ var ajaxSyncMethod = function() {
   xhr.onreadystatechange = function(e) {
     if (xhr.readyState === xhr.DONE) {
       var t = xhr.getResponseHeader('X-Timer');
-      t = t.split(",")[0].substring(1)
-      var server_time = parseFloat(t) * 1000;
+      var server_time;
+      if (t) {
+        t = t.split(",")[0].substring(1);
+        server_time = parseFloat(t) * 1000;
+      } else {
+        server_time = now();
+      }
       clocksync.syncResponse({
         clientLocalTime: start,
         serverLocalTime: server_time
