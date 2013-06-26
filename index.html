@@ -17,25 +17,24 @@
   var display = document.getElementById('display');
   var seconds = document.getElementById('seconds');
 
+  // play noise to trigger the context.currentTime
+  var noise = context.createOscillator();
+  noise.type = 0; // sine
+  noise.frequency.value = 1;
+  noise.connect(context.destination);
+  noise.noteOn(0);
+  noise.noteOff(0.1);
+
   function play() {
     if (!buffer || !!source) {
       return;
     }
-    // play noise
-    var noise = context.createOscillator();
-    noise.type = 0; // sine
-    noise.frequency.value = 1;
-    noise.connect(context.destination);
-    noise.noteOn(0);
-    noise.noteOff(0.1);
-
 
     source = context.createBufferSource();
     source.buffer = buffer;
     source.loop = true;
     source.connect(context.destination);
     var duration = source.buffer.duration;
-    duration = 187.3773956298828; // onye_akpa
     window.source = source;
     display.textContent = 'Syncing Clock';
     console.log('syncing');
@@ -44,14 +43,7 @@
     var seconds_today = now % (86400000) / 1000;
     var offset = (seconds_today + 2) % duration;
     console.log('start at', context.currentTime, offset);
-    if (source.start) {
-      source.start(context.currentTime + 2, offset);
-    } else if (source.noteGrainOn) {
-      console.warn('using noteGrainOn does not seem to work in iOS.')
-      source.noteGrainOn(context.currentTime + 2, offset, duration);
-    } else {
-      console.warn('Does not support playing with offsets.');
-    }
+    source.start(context.currentTime + 2, offset);
   }
 
   function stop() {
@@ -59,11 +51,7 @@
       return;
     }
     display.textContent = 'Stopped';
-    if (source.stop) {
-      source.stop(0); 
-    } else if (source.noteOff) {
-      source.noteOff(0);
-    }
+    source.stop(0); 
     source = undefined;
   }
 

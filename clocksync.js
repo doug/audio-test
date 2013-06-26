@@ -179,7 +179,7 @@
 
 var ajaxSyncMethod = function() {
   var xhr = new XMLHttpRequest();
-  xhr.open('HEAD', 'http://www.dougfritz.com/xtimer', false);
+  xhr.open('HEAD', '/xtimer', false);
   var start = now();
   xhr.onreadystatechange = function(e) {
     if (xhr.readyState === xhr.DONE) {
