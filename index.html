@@ -21,6 +21,9 @@
   var playb = document.getElementById('play');
   var stopb = document.getElementById('stop');
 
+  window.AudioContext = window.AudioContext||window.webkitAudioContext;
+  context = new AudioContext();
+  
   // play noise to trigger the context.currentTime
   var noise = context.createOscillator();
   noise.type = 0; // sine
@@ -68,8 +71,6 @@
     console.log('Clock synced');
     display.textContent = 'Loading music';
     console.log('loading buffer');
-    window.AudioContext = window.AudioContext||window.webkitAudioContext;
-    context = new AudioContext();
     var request = new XMLHttpRequest();
     request.open('GET', 'http://commondatastorage.googleapis.com/arcade-fire%2Fonye_akpa.mp3', true);
     request.responseType = 'arraybuffer';
