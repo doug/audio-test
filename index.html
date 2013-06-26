@@ -61,7 +61,12 @@
     var seconds_today = now % (86400000) / 1000;
     var padding = 2;
     var offset = (seconds_today + padding) % duration;
-    log('Start at', context.currentTime + padding, 'offset', offset);
+    var began_at = now - offset * 1000;
+    log('song began at:', began_at, 
+        'now:', now,
+        'context time:', context.currentTime, 
+        'play at', context.currentTime + padding,
+        'song offset:', offset);
     source.start(context.currentTime + padding, offset);
   }
 
