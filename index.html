@@ -1,0 +1,99 @@
+<html>
+<head>
+  <title></title>
+</head>
+<body>
+<div id='display'></div>
+<div id='seconds'></div>
+<button id='play' onclick='play();'>play</button>
+<button id='stop' onclick='stop();'>stop</button>
+<script src='clocksync.js'></script>
+<script>
+
+  var iOS = ( navigator.userAgent.match(/(iPad|iPhone|iPod)/g) ? true : false );
+
+  var buffer, context, source;
+
+  var display = document.getElementById('display');
+  var seconds = document.getElementById('seconds');
+
+  function play() {
+    if (!buffer || !!source) {
+      return;
+    }
+    // play noise
+    var noise = context.createOscillator();
+    noise.type = 0; // sine
+    noise.frequency.value = 1;
+    noise.connect(context.destination);
+    noise.noteOn(0);
+    noise.noteOff(0.1);
+
+
+    source = context.createBufferSource();
+    source.buffer = buffer;
+    source.loop = true;
+    source.connect(context.destination);
+    var duration = source.buffer.duration;
+    duration = 187.3773956298828; // onye_akpa
+    window.source = source;
+    display.textContent = 'Syncing Clock';
+    console.log('syncing');
+    display.textContent = 'Playing';
+    var now = clocksync.time();
+    var seconds_today = now % (86400000) / 1000;
+    var offset = (seconds_today + 2) % duration;
+    console.log('start at', context.currentTime, offset);
+    if (source.start) {
+      source.start(context.currentTime + 2, offset);
+    } else if (source.noteGrainOn) {
+      console.warn('using noteGrainOn does not seem to work in iOS.')
+      source.noteGrainOn(context.currentTime + 2, offset, duration);
+    } else {
+      console.warn('Does not support playing with offsets.');
+    }
+  }
+
+  function stop() {
+    if (!source) {
+      return;
+    }
+    display.textContent = 'Stopped';
+    if (source.stop) {
+      source.stop(0); 
+    } else if (source.noteOff) {
+      source.noteOff(0);
+    }
+    source = undefined;
+  }
+
+  console.log('Syncing clock');
+  clocksync.sync(function() {
+    console.log('Clock synced');
+    display.textContent = 'Loading music';
+    console.log('loading buffer');
+    window.AudioContext = window.AudioContext||window.webkitAudioContext;
+    context = new AudioContext();
+    var request = new XMLHttpRequest();
+    request.open('GET', 'http://commondatastorage.googleapis.com/arcade-fire%2Fonye_akpa.mp3', true);
+    request.responseType = 'arraybuffer';
+    request.onload = function() {
+      context.decodeAudioData(request.response, function(b) {
+        display.textContent = 'Music Loaded';
+        buffer = b;
+        play();
+      });
+    };
+    request.send();
+  });
+
+  function loop() {
+    seconds.textContent = 'Current Seconds: ' + (clocksync.time() % 60000 / 1000);
+    requestAnimationFrame(loop);
+  }
+
+  loop();
+
+</script>
+</body>
+</html>
