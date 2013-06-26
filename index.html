@@ -3,7 +3,9 @@
   <title></title>
 </head>
 <body>
+<div>status</div>
 <div id='display'></div>
+<div>current seconds</div>
 <div id='seconds'></div>
 <button id='play' onclick='play();'>play</button>
 <button id='stop' onclick='stop();'>stop</button>
@@ -76,7 +78,7 @@
   });
 
   function loop() {
-    seconds.textContent = 'Current Seconds: ' + (clocksync.time() % 60000 / 1000);
+    seconds.textContent = (clocksync.time() % 60000 / 1000);
     requestAnimationFrame(loop);
   }
 
