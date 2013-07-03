@@ -55,6 +55,8 @@
     source.loop = true;
     source.connect(context.destination);
     var duration = source.buffer.duration;
+    // ERROR: duration is not the same on mobile for same file with mp3
+    duration = Math.round(duration);
     window.source = source;
     log('Playing');
     var now = clocksync.time();
