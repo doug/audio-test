@@ -75,7 +75,6 @@
   };
 
   var updateSync = function (sample) {
-    console.log('update sample', sample);
     clockDelta = sample.clockDelta;
     pushSample(sample);
     if (samples.length < 9) {
@@ -180,12 +179,18 @@
 
 var ajaxSyncMethod = function() {
   var xhr = new XMLHttpRequest();
-  xhr.open('HEAD', 'http://clocksync.computersarefunanduseful.appspot.com/api/clocksync', false);
+  xhr.open('HEAD', '/xtimer', false);
   var start = now();
   xhr.onreadystatechange = function(e) {
     if (xhr.readyState === xhr.DONE) {
-      var t = xhr.getResponseHeader('Last-Modified');
-      var server_time = parseFloat(t);
+      var t = xhr.getResponseHeader('X-Timer');
+      var server_time;
+      if (t) {
+        t = t.split(",")[0].substring(1);
+        server_time = parseFloat(t) * 1000;
+      } else {
+        server_time = now();
+      }
       clocksync.syncResponse({
         clientLocalTime: start,
         serverLocalTime: server_time
