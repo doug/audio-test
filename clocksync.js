@@ -75,6 +75,7 @@
   };
 
   var updateSync = function (sample) {
+    console.log('update sample', sample);
     clockDelta = sample.clockDelta;
     pushSample(sample);
     if (samples.length < 9) {
@@ -184,13 +185,7 @@ var ajaxSyncMethod = function() {
   xhr.onreadystatechange = function(e) {
     if (xhr.readyState === xhr.DONE) {
       var t = xhr.getResponseHeader('Last-Modified');
-      var server_time;
-      if (t) {
-        t = t.split(",")[0].substring(1);
-        server_time = parseFloat(t) * 1000;
-      } else {
-        server_time = now();
-      }
+      var server_time = parseFloat(t);
       clocksync.syncResponse({
         clientLocalTime: start,
         serverLocalTime: server_time
@@ -201,7 +196,7 @@ var ajaxSyncMethod = function() {
 };
 
 var clocksync = {
-  delta: clockDelta,
+  delta: function() { return clockDelta; },
   time: nowsync,
   sync: function(callback) {
     this.callback = callback;
