@@ -179,11 +179,11 @@
 
 var ajaxSyncMethod = function() {
   var xhr = new XMLHttpRequest();
-  xhr.open('HEAD', '/xtimer', false);
+  xhr.open('HEAD', 'http://clocksync.computersarefunanduseful.appspot.com/api/clocksync', false);
   var start = now();
   xhr.onreadystatechange = function(e) {
     if (xhr.readyState === xhr.DONE) {
-      var t = xhr.getResponseHeader('X-Timer');
+      var t = xhr.getResponseHeader('Last-Modified');
       var server_time;
       if (t) {
         t = t.split(",")[0].substring(1);
