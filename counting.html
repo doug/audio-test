@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title></title>
+</head>
+<body>
+<div id="display"></div>
+<div id="seconds"></div>
+<script src='/tailbone.js'></script>
+<script type="text/javascript">
+
+var iOS = ( navigator.userAgent.match(/(iPad|iPhone|iPod)/g) ? true : false );
+
+var display = document.getElementById('display');
+function log() {
+  var args = Array.prototype.slice.call(arguments);
+  display.textContent = args.join(' ');
+  console.log.apply(console, arguments);
+}
+
+var seconds = document.getElementById('seconds');
+function loop() {
+  seconds.textContent = (tailbone.clocksync.time() / 1000 % 60);
+  requestAnimationFrame(loop);
+}
+
+loop();
+
+</script>
+<script>
+
+window.AudioContext = window.AudioContext||window.webkitAudioContext;
+var context = new AudioContext();
+var source;
+var WINDOW = 5000;
+
+function playsilent() {
+  var noise = context.createOscillator();
+  noise.type = 0; // sine
+  noise.frequency.value = 1;
+  noise.connect(context.destination);
+  var t1 = tailbone.clocksync.time();
+  noise.noteOn(0);
+  noise.noteOff(0.1);
+}
+
+function playmain() {
+  if (source) {
+    stop();
+    return;
+  }
+  playsilent();
+  tailbone.clocksync.sync(function() {
+    log('loading buffer');
+    var request = new XMLHttpRequest();
+    request.open('GET', 'http://arcade-fire.commondatastorage.googleapis.com/sketches%2Fcounting_124.mp3', true);
+    request.responseType = 'arraybuffer';
+    request.onload = function() {
+      context.decodeAudioData(request.response, function(buffer) {
+        log('playing main');
+        source = context.createBufferSource();
+        source.buffer = buffer;
+        source.loop = false;
+        source.connect(context.destination);
+        var now = tailbone.clocksync.time();
+        var x = Math.floor(now / WINDOW)
+        var target = (x * WINDOW + WINDOW * 2);
+        log("Your target time is " + 
+            (target) + 
+            ", make sure they match or try again.");
+        var target_from_now = (target - now) / 1000;
+        if (source.start) {
+          source.start(context.currentTime + target_from_now);
+        } else if (source.noteOn) {
+          console.warn('using noteGrainOn does not seem to work in iOS.')
+          source.noteOn(context.currentTime + target_from_now);
+        } else {
+          console.warn('Does not support playing with web audio api.');
+        }
+      });
+    };
+    request.send();
+  });
+}
+
+function playecho() {
+  if (source) {
+    stop();
+    return;
+  }
+  playsilent();
+  tailbone.clocksync.sync(function() {
+    log('loading buffer');
+    var request = new XMLHttpRequest();
+    request.open('GET', 'http://arcade-fire.commondatastorage.googleapis.com/sketches%2Fcounting_3.mp3', true);
+    request.responseType = 'arraybuffer';
+    request.onload = function() {
+      context.decodeAudioData(request.response, function(buffer) {
+        log('playing echo');
+        source = context.createBufferSource();
+        source.buffer = buffer;
+        source.loop = false;
+        source.connect(context.destination);
+        var now = tailbone.clocksync.time();
+        var x = Math.floor(now / WINDOW)
+        var target = (x * WINDOW + WINDOW * 2);
+        log("Your target time is " + 
+            (target) + 
+            ", make sure they match or try again.");
+        var target_from_now = (target - now) / 1000;
+        if (source.start) {
+          source.start(context.currentTime + target_from_now + 3);
+        } else if (source.noteOn) {
+          console.warn('using noteGrainOn does not seem to work in iOS.')
+          source.noteOn(context.currentTime + target_from_now + 3);
+        } else {
+          console.warn('Does not support playing with web audio api.');
+        }
+      });
+    };
+    request.send();
+  });
+}
+
+function stop() {
+  log('stopped');
+  if (source.stop) {
+    source.stop(0); 
+  } else if (source.noteOff) {
+    source.noteOff(0);
+  }
+  source = undefined;
+}
+
+</script>
+<button onclick="playmain()">Play 124</button>
+<button onclick="playecho()">Play 3</button>
+</body>
+</html>
