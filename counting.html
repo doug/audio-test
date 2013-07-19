@@ -6,7 +6,7 @@
 <body>
 <div id="display"></div>
 <div id="seconds"></div>
-<script src='/tailbone.js'></script>
+<script src='/clocksync.js'></script>
 <script type="text/javascript">
 
 var iOS = ( navigator.userAgent.match(/(iPad|iPhone|iPod)/g) ? true : false );
@@ -65,8 +65,8 @@ function playmain() {
         var now = tailbone.clocksync.time();
         var x = Math.floor(now / WINDOW)
         var target = (x * WINDOW + WINDOW * 2);
-        log("Your target time is " + 
-            (target) + 
+        log("Your target time is " +
+            (target) +
             ", make sure they match or try again.");
         var target_from_now = (target - now) / 1000;
         if (source.start) {
@@ -104,8 +104,8 @@ function playecho() {
         var now = tailbone.clocksync.time();
         var x = Math.floor(now / WINDOW)
         var target = (x * WINDOW + WINDOW * 2);
-        log("Your target time is " + 
-            (target) + 
+        log("Your target time is " +
+            (target) +
             ", make sure they match or try again.");
         var target_from_now = (target - now) / 1000;
         if (source.start) {
@@ -125,7 +125,7 @@ function playecho() {
 function stop() {
   log('stopped');
   if (source.stop) {
-    source.stop(0); 
+    source.stop(0);
   } else if (source.noteOff) {
     source.noteOff(0);
   }
