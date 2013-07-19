@@ -20,7 +20,7 @@ function log() {
 
 var seconds = document.getElementById('seconds');
 function loop() {
-  seconds.textContent = (tailbone.clocksync.time() / 1000 % 60);
+  seconds.textContent = (clocksync.time() / 1000 % 60);
   requestAnimationFrame(loop);
 }
 
@@ -39,7 +39,7 @@ function playsilent() {
   noise.type = 0; // sine
   noise.frequency.value = 1;
   noise.connect(context.destination);
-  var t1 = tailbone.clocksync.time();
+  var t1 = clocksync.time();
   noise.noteOn(0);
   noise.noteOff(0.1);
 }
@@ -50,7 +50,7 @@ function playmain() {
     return;
   }
   playsilent();
-  tailbone.clocksync.sync(function() {
+  clocksync.sync(function() {
     log('loading buffer');
     var request = new XMLHttpRequest();
     request.open('GET', 'http://arcade-fire.commondatastorage.googleapis.com/sketches%2Fcounting_124.mp3', true);
@@ -62,7 +62,7 @@ function playmain() {
         source.buffer = buffer;
         source.loop = false;
         source.connect(context.destination);
-        var now = tailbone.clocksync.time();
+        var now = clocksync.time();
         var x = Math.floor(now / WINDOW)
         var target = (x * WINDOW + WINDOW * 2);
         log("Your target time is " +
@@ -89,7 +89,7 @@ function playecho() {
     return;
   }
   playsilent();
-  tailbone.clocksync.sync(function() {
+  clocksync.sync(function() {
     log('loading buffer');
     var request = new XMLHttpRequest();
     request.open('GET', 'http://arcade-fire.commondatastorage.googleapis.com/sketches%2Fcounting_3.mp3', true);
@@ -101,7 +101,7 @@ function playecho() {
         source.buffer = buffer;
         source.loop = false;
         source.connect(context.destination);
-        var now = tailbone.clocksync.time();
+        var now = clocksync.time();
         var x = Math.floor(now / WINDOW)
         var target = (x * WINDOW + WINDOW * 2);
         log("Your target time is " +
