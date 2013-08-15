@@ -9,7 +9,6 @@
 <div id='seconds'></div>
 <button id='play' onclick='play();' disabled='true'>play</button>
 <button id='stop' onclick='stop();' disabled='true'>stop</button>
-<script src='clocksync.js'></script>
 <script>
   var display = document.getElementById('display');
 
@@ -34,13 +33,16 @@
   window.AudioContext = window.AudioContext||window.webkitAudioContext;
   context = new AudioContext();
 
-  // play noise to trigger the context.currentTime
-  var noise = context.createOscillator();
-  noise.type = 0; // sine
-  noise.frequency.value = 1;
-  noise.connect(context.destination);
-  noise.noteOn(0);
-  noise.noteOff(0.1);
+  function silentstart() {
+    // play noise to trigger the context.currentTime
+    var noise = context.createOscillator();
+    noise.type = 0; // sine
+    noise.frequency.value = 1;
+    noise.connect(context.destination);
+    noise.noteOn(0);
+    noise.noteOff(0.1);
+  }
+  silentstart();
 
 
   function play() {
@@ -59,13 +61,11 @@
     duration = Math.round(duration);
     window.source = source;
     log('Playing');
-    var now = clocksync.time();
-    var seconds_today = now % (86400000) / 1000;
+    window.duration = duration;
+    var offset = performance.now() / 1000 + (navStart - startTime) / 1000;
+    offset = offset % duration;
     var padding = 2;
-    var offset = (seconds_today + padding) % duration;
-    var began_at = now - offset * 1000;
-    log('song began at:', began_at, 
-        'now:', now,
+    log('song began at:', startTime, 
         'context time:', context.currentTime, 
         'play at', context.currentTime + padding,
         'song offset:', offset);
@@ -83,26 +83,29 @@
     source = undefined;
   }
 
-  log('Syncing clock');
-  clocksync.sync(function() {
-    log('Clock synced');
-    log('Loading music');
-    var request = new XMLHttpRequest();
-    var music = getURLParameter('mp3') || 'http://commondatastorage.googleapis.com/arcade-fire%2Fonye_akpa.mp3';
-    request.open('GET', music, true);
-    request.responseType = 'arraybuffer';
-    request.onload = function() {
-      context.decodeAudioData(request.response, function(b) {
-        display.textContent = 'Music Loaded';
-        buffer = b;
-        play();
-      });
-    };
-    request.send();
-  });
+  var startTime = parseInt(getURLParameter('start'));  // can be NaN
+  var navStart = performance.timing.navigationStart;
+  if (!startTime) {
+    startTime = navStart;
+  }
+
+  log('Loading music');
+  var request = new XMLHttpRequest();
+  var music = getURLParameter('src') || 'http://commondatastorage.googleapis.com/arcade-fire%2Fonye_akpa.mp3';
+  request.open('GET', music, true);
+  request.responseType = 'arraybuffer';
+  request.onload = function() {
+    context.decodeAudioData(request.response, function(b) {
+      display.textContent = 'Music Loaded';
+      buffer = b;
+      setTimeout(play, 1000);
+      // play();
+    });
+  };
+  request.send();
 
   function loop() {
-    seconds.textContent = (clocksync.time() % 60000 / 1000);
+    seconds.textContent = (performance.now() % 60000 / 1000);
     requestAnimationFrame(loop);
   }
 
